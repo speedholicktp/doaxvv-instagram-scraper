@@ -6,6 +6,8 @@ import os
 import shutil
 import datetime
 import configparser
+import requests
+import json
 
 # Get env vars
 target_username = os.environ.get('INSTAGRAM_SCRAPING_TARGET_USERNAME')
@@ -20,6 +22,7 @@ discord_webhook_wait_url = discord_webhook_url + '?wait=true'
 profile_date = datetime.datetime.fromtimestamp(1286323200) # instagram-scraper will set this timestamp to profile related items. 
 scraped_data_store = '.' + os.sep + target_username
 config_section_users = 'users'
+instagram_url_prefix_for_shortcode = 'https://www.instagram.com/tv/'
 
 # Delete previous scraped data
 try:
@@ -29,7 +32,7 @@ except:
 
 # Create timestamp to retrieve the latest posts only
 query_date = datetime.datetime.now() - datetime.timedelta(minutes=scraping_interval)
-# query_date = datetime.datetime.fromtimestamp(1286323201)
+#query_date = datetime.datetime.fromtimestamp(profile_date + 1)
 print('Fetch data posted after the following timestamp:' + query_date.strftime('%Y/%m/%d %H:%M:%S'))
 query_date_int = int(query_date.timestamp())
 parser = configparser.ConfigParser()
@@ -63,7 +66,7 @@ try:
         caption = ''
         for edge in item['edge_media_to_caption']['edges']:
             caption += edge['node']['text']
-        instagram_post_url = instagram_url_prefix_for_shortcode + item['shortcode']
+        instagram_post_url = instagram_url_prefix_for_shortcode + item['shortcode'] + '/'
         main_content = {'content': caption + '\n' + instagram_post_url}
         headers = {'Content-Type': 'application/json'}
         response = requests.post(discord_webhook_url, json.dumps(main_content), headers = headers)
